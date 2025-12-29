@@ -373,7 +373,12 @@ export default function LudoBoard() {
 
                 // Improve clickability check
                           const isCurrentTurn = gameState.currentPlayerIndex === pIndex;
-                          const isMovable = isCurrentTurn && gameState.diceValue !== null && canMovePiece(piece, gameState.diceValue);
+                const isMovable = isCurrentTurn &&
+                  gameState.waitingForMove &&
+                  !isAnimating &&
+                  !isRolling &&
+                  gameState.diceValue !== null &&
+                  canMovePiece(piece, gameState.diceValue);
 
                           return (
                                <div key={piece.id} className="contents pointer-events-auto">

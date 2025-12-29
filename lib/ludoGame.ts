@@ -125,9 +125,9 @@ export function advancePieceByOne(gameState: GameState, pieceId: string): GameSt
     if (piece.distanceTraveled < 51) {
       piece.position = (START_POSITIONS[piece.color as PlayerColor] + piece.distanceTraveled) % 52;
     } else {
-// In home stretch
-      // getPieceCoordinates expects position >= 51 to calculate homeIndex = position - 51
-      piece.position = piece.distanceTraveled;
+      // In home stretch
+      // Use offset 100 to differentiate from main path (0-51)
+      piece.position = 100 + (piece.distanceTraveled - 51);
 
       if (piece.distanceTraveled >= TOTAL_LENGTH - 1) { // 57
         // Reached end?

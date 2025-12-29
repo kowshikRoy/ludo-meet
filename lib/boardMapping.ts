@@ -102,15 +102,17 @@ export function getPieceCoordinates(color: PlayerColor, position: number, state:
         return { x: 7, y: 7 }; 
     }
 
-    // Active
-    if (position < 51) {
-        return MAIN_PATH_COORDS[position];
+    // Home stretch (Offset 100)
+    if (position >= 100) {
+        const homeIndex = position - 100;
+        if (homeIndex >= 0 && homeIndex < 6) {
+            return HOME_RUN_COORDS[color][homeIndex];
+        }
     }
-    
-    // Home stretch
-    const homeIndex = position - 51;
-    if (homeIndex >= 0 && homeIndex < 6) {
-        return HOME_RUN_COORDS[color][homeIndex];
+
+    // Active on main path
+    if (position >= 0 && position < 52) {
+        return MAIN_PATH_COORDS[position];
     }
 
     return { x: 7, y: 7 };

@@ -35,7 +35,7 @@ export default function LudoPiece({
             className={cn(
                 "relative rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.4)] z-10 cursor-pointer flex items-center justify-center border-2",
                 COLORS[color],
-                isClickable && "ring-4 ring-white/50 animate-pulseHover",
+                isClickable && "ring-4 ring-white shadow-[0_0_15px_rgba(255,255,255,0.7)]",
                 "w-[80%] h-[80%] justify-self-center self-center"
             )}
             style={{
@@ -44,11 +44,15 @@ export default function LudoPiece({
             }}
             initial={false}
             animate={{ 
-                scale: isClickable ? 1.1 : 1,
-                zIndex: isClickable ? 20 : 10
+                scale: isClickable ? 1.15 : 1,
+                zIndex: isClickable ? 20 : 10,
+                y: isClickable ? [0, -6, 0] : 0
             }}
-            whileHover={isClickable ? { scale: 1.2 } : {}}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            whileHover={isClickable ? { scale: 1.25 } : {}}
+            transition={{
+                default: { type: "spring", stiffness: 300, damping: 25 },
+                y: isClickable ? { duration: 1, repeat: Infinity, ease: "easeInOut" } : { duration: 0.2 }
+            }}
             onClick={onClick}
         >
              <div className="w-[60%] h-[60%] rounded-full bg-white/30" />

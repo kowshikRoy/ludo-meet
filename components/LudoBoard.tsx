@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Piece, GameState, createInitialState, rollDice, movePiece, PlayerColor, canMovePiece } from '@/lib/ludoGame';
+import { Piece, GameState, createInitialState, rollDice, movePiece, PlayerColor, canMovePiece, activatePiece, advancePieceByOne, finalizeTurn } from '@/lib/ludoGame';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getPieceCoordinates, MAIN_PATH_COORDS, HOME_RUN_COORDS, SAFE_ZONES } from '@/lib/boardMapping';
@@ -14,18 +14,57 @@ export default function LudoBoard() {
 
   // Dice sound/animation could go here
 
+  // We need to keep a ref or state for "isAnimating" to prevent interaction
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const runMoveAnimation = async (piece: Piece, diceValue: number) => {
+    setIsAnimating(true);
+
+    // If piece is home, it just activates (no multi-step animation for now, though we could animate spawn)
+    if (piece.state === 'home') {
+      const newState = activatePiece(gameState, piece.id);
+      setGameState(newState);
+      // Short delay to show activation
+      await new Promise(r => setTimeout(r, 400));
+      const finalState = finalizeTurn(newState, piece.id, diceValue);
+      setGameState(finalState);
+    } else {
+      // Move step by step
+      let currentState = gameState;
+      for (let i = 0; i < diceValue; i++) {
+        currentState = advancePieceByOne(currentState, piece.id);
+        setGameState(currentState);
+        // Wait for step
+        // Calculate delay - closer to "a bit slower"? 200ms?
+        await new Promise(r => setTimeout(r, 250));
+
+        // If finished, break
+        const p = currentState.players[currentState.currentPlayerIndex].pieces.find(p => p.id === piece.id);
+        if (p && p.state === 'finished') break;
+      }
+
+      // Finalize
+      await new Promise(r => setTimeout(r, 200)); // Pause before capture effect
+      const finalState = finalizeTurn(currentState, piece.id, diceValue);
+      setGameState(finalState);
+    }
+
+    setIsAnimating(false);
+  };
+
   const handleRollDice = () => {
-    if (gameState.waitingForMove) return;
+    if (gameState.waitingForMove || isAnimating) return;
     const roll = rollDice();
 
     // Check if any move is possible
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-    const hasMoves = currentPlayer.pieces.some(p => canMovePiece(p, roll));
+    const movablePieces = currentPlayer.pieces.filter(p => canMovePiece(p, roll));
+    const hasMoves = movablePieces.length > 0;
 
     let nextState = { ...gameState, diceValue: roll, waitingForMove: hasMoves };
 
     if (!hasMoves) {
-      // Auto skip turn if no moves (maybe delay for viewing)
+      // Auto skip turn if no moves
       setTimeout(() => {
         setGameState(prev => ({
           ...prev,
@@ -34,18 +73,24 @@ export default function LudoBoard() {
           waitingForMove: false
         }));
       }, 1000);
+      setGameState(nextState); // Update immediately to show dice
+    } else if (movablePieces.length === 1) {
+      // Auto move if only one option
+      setGameState(nextState); // Show dice
+      setTimeout(() => {
+        runMoveAnimation(movablePieces[0], roll);
+      }, 500);
+    } else {
+      setGameState(nextState);
     }
-
-    setGameState(nextState);
   };
 
   const handleDataPieceClick = (piece: Piece) => {
-    if (!gameState.waitingForMove || !gameState.diceValue) return;
+    if (!gameState.waitingForMove || !gameState.diceValue || isAnimating) return;
     if (piece.color !== gameState.players[gameState.currentPlayerIndex].color) return;
 
     if (canMovePiece(piece, gameState.diceValue)) {
-      const newState = movePiece(gameState, piece.id, gameState.diceValue);
-      setGameState(newState);
+      runMoveAnimation(piece, gameState.diceValue);
     }
   };
 

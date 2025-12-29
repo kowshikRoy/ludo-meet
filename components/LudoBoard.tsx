@@ -68,7 +68,8 @@ const DiceFace = ({ value, isRolling }: { value: number, isRolling?: boolean }) 
 
   return (
     <div className={cn("w-full h-full flex items-center justify-center", isRolling && "animate-spin-fast")}>
-      <svg viewBox="0 0 100 100" className="w-[70px] h-[70px] text-black fill-current">
+      <svg viewBox="0 0 100 100" className="w-[70px] h-[70px] text-black">
+        <rect x="2" y="2" width="96" height="96" rx="16" className="fill-white stroke-slate-300 stroke-[3]" />
         <Dots />
       </svg>
     </div>
@@ -424,8 +425,7 @@ export default function LudoBoard() {
               onClick={handleRollDice}
             disabled={(gameState.waitingForMove && !isRolling) || !!gameState.winner}
               className={cn(
-                "w-24 h-24 rounded-2xl text-4xl font-black shadow-xl transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 p-0 overflow-visible [&_svg]:size-auto",
-                "bg-white text-black border-2 border-slate-200"
+                "w-24 h-24 rounded-2xl transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 p-0 overflow-visible [&_svg]:size-auto bg-transparent hover:bg-transparent shadow-none"
               )}
             >
             {isRolling || !gameState.diceValue ? (

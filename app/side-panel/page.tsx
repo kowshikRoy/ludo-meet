@@ -14,7 +14,7 @@ export default function SidePanelPage() {
         setIsLoading(true);
         setError(null);
 
-        console.log('Meet Client Object:', meetClient); // Debug logging
+        console.log('Meet Client Object:', meetClient); // Keep debug log for moment, or remove. Let's remove it once fixed.
 
         if (!meetClient) {
             setError(initError || "Meet Add-on SDK not initialized. Are you in Google Meet?");
@@ -23,7 +23,7 @@ export default function SidePanelPage() {
         }
 
         try {
-            await meetClient.activity.startActivity({
+            await meetClient.startActivity({
                 mainStageUrl: window.location.origin + '/main-stage'
             });
         } catch (err: any) {

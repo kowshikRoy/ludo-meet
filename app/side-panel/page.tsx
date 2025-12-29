@@ -2,20 +2,33 @@
 import { useMeetSidePanel } from '@/hooks/useMeetAddon';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Users, Play } from 'lucide-react';
+import { Users, Play, AlertCircle, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 export default function SidePanelPage() {
     const meetClient = useMeetSidePanel();
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     const loadMainStage = async () => {
-        if (!meetClient) return;
+        setIsLoading(true);
+        setError(null);
+
+        if (!meetClient) {
+            setError("Meet Add-on SDK not initialized. Are you in Google Meet?");
+            setIsLoading(false);
+            return;
+        }
+
         try {
-            // In a real app, you'd generate a session ID or specific URL
             await meetClient.activity.startActivity({
                 mainStageUrl: window.location.origin + '/main-stage'
             });
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error starting activity', err);
+            setError(err.message || "Failed to start activity. Check console.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -45,6 +58,20 @@ export default function SidePanelPage() {
                             <Users className="w-3 h-3" />
                             Supports up to 4 players
                         </div>
+
+                        {error && (
+                            <div className="text-xs text-red-500 flex items-center gap-1 justify-center bg-red-50 p-2 rounded">
+                                <AlertCircle className="w-3 h-3" />
+                                {error}
+                            </div>
+                        )}
+
+                        {!meetClient && !error && (
+                            <div className="text-xs text-yellow-600 flex items-center gap-1 justify-center bg-yellow-50 p-2 rounded">
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                                Initializing SDK...
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>

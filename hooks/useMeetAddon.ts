@@ -19,9 +19,11 @@ export function useMeetSidePanel() {
     }
 
     // Only run if window.meet is available or we are in an iframe
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' &&
+      (window.location.search.includes('meet_sdk') || window.name.includes('meet_sdk'))) { // Simple check to avoid error in local dev
       init();
     }
+    // Alternatively, we could fail silently or set a mock client for dev
   }, []);
 
   return client;
@@ -41,7 +43,8 @@ export function useMeetMainStage() {
         console.error('Failed to initialize Meet Main Stage:', error);
       }
     }
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' &&
+      (window.location.search.includes('meet_sdk') || window.name.includes('meet_sdk'))) {
       init();
     }
   }, []);

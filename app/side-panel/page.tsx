@@ -14,6 +14,8 @@ export default function SidePanelPage() {
         setIsLoading(true);
         setError(null);
 
+        console.log('Meet Client Object:', meetClient); // Debug logging
+
         if (!meetClient) {
             setError(initError || "Meet Add-on SDK not initialized. Are you in Google Meet?");
             setIsLoading(false);

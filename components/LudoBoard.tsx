@@ -9,6 +9,162 @@ import LudoPiece from '@/components/LudoPiece';
 
 // Helper for highlighting safe zones or special cells if needed
 
+const DiceFace = ({ value, isRolling }: { value: number, isRolling?: boolean }) => {
+  // Standard dice layout using 100x100 coord system
+  // Dots radius = 13 (approx 26% of width)
+  const Dots = () => {
+    switch (value) {
+      case 1:
+        return <circle cx="50" cy="50" r="16" fill="currentColor" />;
+      case 2:
+        return (
+          <>
+            <circle cx="25" cy="25" r="13" fill="currentColor" />
+            <circle cx="75" cy="75" r="13" fill="currentColor" />
+          </>
+        );
+      case 3:
+        return (
+          <>
+            <circle cx="20" cy="20" r="13" fill="currentColor" />
+            <circle cx="50" cy="50" r="13" fill="currentColor" />
+            <circle cx="80" cy="80" r="13" fill="currentColor" />
+          </>
+        );
+      case 4:
+        return (
+          <>
+            <circle cx="25" cy="25" r="13" fill="currentColor" />
+            <circle cx="75" cy="25" r="13" fill="currentColor" />
+            <circle cx="25" cy="75" r="13" fill="currentColor" />
+            <circle cx="75" cy="75" r="13" fill="currentColor" />
+          </>
+        );
+      case 5:
+        return (
+          <>
+            <circle cx="25" cy="25" r="13" fill="currentColor" />
+            <circle cx="75" cy="25" r="13" fill="currentColor" />
+            <circle cx="25" cy="75" r="13" fill="currentColor" />
+            <circle cx="75" cy="75" r="13" fill="currentColor" />
+            <circle cx="50" cy="50" r="13" fill="currentColor" />
+          </>
+        );
+      case 6:
+        return (
+          <>
+            <circle cx="25" cy="20" r="13" fill="currentColor" />
+            <circle cx="25" cy="50" r="13" fill="currentColor" />
+            <circle cx="25" cy="80" r="13" fill="currentColor" />
+            <circle cx="75" cy="20" r="13" fill="currentColor" />
+            <circle cx="75" cy="50" r="13" fill="currentColor" />
+            <circle cx="75" cy="80" r="13" fill="currentColor" />
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className={cn("w-full h-full flex items-center justify-center", isRolling && "animate-spin-fast")}>
+      <svg viewBox="0 0 100 100" className="w-[70px] h-[70px] text-black fill-current">
+        <Dots />
+      </svg>
+    </div>
+  );
+};
+
+const Dice3D = ({ isRolling }: { isRolling: boolean }) => {
+  // Button is w-24 (96px). 3D dice size 70px seems good (clean padding).
+  // Half size for translateZ is 35px.
+  const size = 70;
+  const half = size / 2;
+
+  // Dot helper - default size w-5 h-5 (20px) which matches r=13 (26px diam) roughly? 
+  // Wait, r=13 => diam 26 units. 26% of 70px = 18.2px.
+  // w-4.5 is 1.125rem = 18px.
+  // w-5 is 1.25rem = 20px.
+  // Let's go w-4.5 (18px) to be safe or w-5 (20px) for boldness.
+  // User wants BIG dots. Let's do w-5 (20px).
+  const Dot = ({ top, left, size = "w-5 h-5" }: { top: number, left: number, size?: string }) => (
+    <div
+      className={cn("absolute bg-black rounded-full -translate-x-1/2 -translate-y-1/2", size)}
+      style={{ top: `${top}%`, left: `${left}%` }}
+    />
+  );
+
+  return (
+    <div className="relative" style={{ width: size, height: size, perspective: '300px' }}>
+      <motion.div
+        className="w-full h-full relative"
+        style={{ transformStyle: 'preserve-3d' }}
+        animate={isRolling ? {
+          rotateX: [0, 360, 720, 1080],
+          rotateY: [0, 360, 720, 1080],
+          rotateZ: [0, 180, 360]
+        } : {
+          rotateX: -20,
+          rotateY: 30
+        }}
+        transition={isRolling ? {
+          duration: 0.6,
+          ease: "linear",
+          repeat: Infinity
+        } : {
+          duration: 0.5
+        }}
+      >
+        {/* Faces - Using consistent layouts */}
+        {/* Front (1) - Ace is larger */}
+        <div className="absolute inset-0 bg-white border-2 border-slate-300 backface-hidden" style={{ transform: `translateZ(${half}px)` }}>
+          <Dot top={50} left={50} size="w-6 h-6" />
+        </div>
+
+        {/* Back (6) */}
+        <div className="absolute inset-0 bg-white border-2 border-slate-300 backface-hidden" style={{ transform: `rotateY(180deg) translateZ(${half}px)` }}>
+          <Dot top={20} left={25} />
+          <Dot top={50} left={25} />
+          <Dot top={80} left={25} />
+          <Dot top={20} left={75} />
+          <Dot top={50} left={75} />
+          <Dot top={80} left={75} />
+        </div>
+
+        {/* Top (2) */}
+        <div className="absolute inset-0 bg-white border-2 border-slate-300 backface-hidden" style={{ transform: `rotateX(90deg) translateZ(${half}px)` }}>
+          <Dot top={25} left={25} />
+          <Dot top={75} left={75} />
+        </div>
+
+        {/* Bottom (5) */}
+        <div className="absolute inset-0 bg-white border-2 border-slate-300 backface-hidden" style={{ transform: `rotateX(-90deg) translateZ(${half}px)` }}>
+          <Dot top={25} left={25} />
+          <Dot top={25} left={75} />
+          <Dot top={75} left={25} />
+          <Dot top={75} left={75} />
+          <Dot top={50} left={50} />
+        </div>
+
+        {/* Right (3) */}
+        <div className="absolute inset-0 bg-white border-2 border-slate-300 backface-hidden" style={{ transform: `rotateY(90deg) translateZ(${half}px)` }}>
+          <Dot top={20} left={20} />
+          <Dot top={50} left={50} />
+          <Dot top={80} left={80} />
+        </div>
+
+        {/* Left (4) */}
+        <div className="absolute inset-0 bg-white border-2 border-slate-300 backface-hidden" style={{ transform: `rotateY(-90deg) translateZ(${half}px)` }}>
+          <Dot top={25} left={25} />
+          <Dot top={25} left={75} />
+          <Dot top={75} left={25} />
+          <Dot top={75} left={75} />
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
 export default function LudoBoard() {
   const [gameState, setGameState] = useState<GameState>(createInitialState());
 
@@ -16,6 +172,9 @@ export default function LudoBoard() {
 
   // We need to keep a ref or state for "isAnimating" to prevent interaction
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isRolling, setIsRolling] = useState(false);
+  // displayDiceValue is no longer needed if we only show 3D spin during roll and actual value after.
+  // But wait, user said "finally show svg".
 
   const runMoveAnimation = async (piece: Piece, diceValue: number) => {
     setIsAnimating(true);
@@ -52,9 +211,19 @@ export default function LudoBoard() {
     setIsAnimating(false);
   };
 
-  const handleRollDice = () => {
-    if (gameState.waitingForMove || isAnimating) return;
+  const handleRollDice = async () => {
+    if (gameState.waitingForMove || isAnimating || isRolling) return;
+
+    setIsRolling(true);
+
+    // Randomize duration
+    const duration = 800;
+
+    // Wait for animation
+    await new Promise(resolve => setTimeout(resolve, duration));
+
     const roll = rollDice();
+    setIsRolling(false);
 
     // Check if any move is possible
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
@@ -238,21 +407,22 @@ export default function LudoBoard() {
             <Button
               size="lg"
               onClick={handleRollDice}
-              disabled={gameState.waitingForMove || !!gameState.winner}
+            disabled={(gameState.waitingForMove && !isRolling) || !!gameState.winner}
               className={cn(
-                "w-24 h-24 rounded-2xl text-4xl font-black shadow-xl transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100",
-                "bg-gradient-to-br from-indigo-500 to-purple-600 text-white"
+                "w-24 h-24 rounded-2xl text-4xl font-black shadow-xl transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 p-0 overflow-visible [&_svg]:size-auto",
+                "bg-white text-black border-2 border-slate-200"
               )}
             >
-              {gameState.diceValue ?? "🎲"}
+            {isRolling || !gameState.diceValue ? (
+              <Dice3D isRolling={isRolling} />
+            ) : (
+              <DiceFace value={gameState.diceValue} />
+            )}
             </Button>
           </div>
 
-        <div className={cn(
-          "text-sm text-slate-500 animate-pulse transition-opacity duration-200 h-5", // Fixed height to prevent shift
-          gameState.waitingForMove ? "opacity-100" : "opacity-0"
-        )}>
-          Select a piece to move...
+        <div className="h-5 text-sm text-slate-500 animate-pulse font-medium">
+          {(gameState.waitingForMove && !isRolling) ? "Select a piece to move..." : ""}
         </div>
         </div>
       </div>

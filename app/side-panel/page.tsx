@@ -6,7 +6,7 @@ import { Users, Play, AlertCircle, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 export default function SidePanelPage() {
-    const meetClient = useMeetSidePanel();
+    const { client: meetClient, error: initError } = useMeetSidePanel();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -15,7 +15,7 @@ export default function SidePanelPage() {
         setError(null);
 
         if (!meetClient) {
-            setError("Meet Add-on SDK not initialized. Are you in Google Meet?");
+            setError(initError || "Meet Add-on SDK not initialized. Are you in Google Meet?");
             setIsLoading(false);
             return;
         }
@@ -59,14 +59,14 @@ export default function SidePanelPage() {
                             Supports up to 4 players
                         </div>
 
-                        {error && (
+                        {(error || initError) && (
                             <div className="text-xs text-red-500 flex items-center gap-1 justify-center bg-red-50 p-2 rounded">
                                 <AlertCircle className="w-3 h-3" />
-                                {error}
+                                {error || initError}
                             </div>
                         )}
 
-                        {!meetClient && !error && (
+                        {!meetClient && !error && !initError && (
                             <div className="text-xs text-yellow-600 flex items-center gap-1 justify-center bg-yellow-50 p-2 rounded">
                                 <Loader2 className="w-3 h-3 animate-spin" />
                                 Initializing SDK...

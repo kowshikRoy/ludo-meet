@@ -9,7 +9,7 @@ export function useMeetSidePanel() {
     async function init() {
       try {
         const session = await meet.addon.createAddonSession({
-          cloudProjectNumber: 'ludo-meet-addon', // This needs to be replaced by user later
+          cloudProjectNumber: '267833624800', // This needs to be replaced by user later
         });
         const sidePanelClient = await session.createSidePanelClient();
         setClient(sidePanelClient);
@@ -35,7 +35,7 @@ export function useMeetMainStage() {
     async function init() {
       try {
         const session = await meet.addon.createAddonSession({
-          cloudProjectNumber: 'ludo-meet-addon',
+          cloudProjectNumber: '267833624800',
         });
         const mainStageClient = await session.createMainStageClient();
         setClient(mainStageClient);

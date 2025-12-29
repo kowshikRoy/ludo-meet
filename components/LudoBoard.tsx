@@ -4,13 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Piece, GameState, createInitialState, rollDice, movePiece, PlayerColor, canMovePiece } from '@/lib/ludoGame';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getPieceCoordinates, MAIN_PATH_COORDS } from '@/lib/boardMapping';
+import { getPieceCoordinates, MAIN_PATH_COORDS, HOME_RUN_COORDS, SAFE_ZONES } from '@/lib/boardMapping';
 import LudoPiece from '@/components/LudoPiece';
 
 // Helper for highlighting safe zones or special cells if needed
-const SAFE_ZONES: { x: number, y: number }[] = [
-  { x: 6, y: 1 }, { x: 8, y: 13 }, { x: 1, y: 8 }, { x: 13, y: 6 }
-];
 
 export default function LudoBoard() {
   const [gameState, setGameState] = useState<GameState>(createInitialState());
@@ -57,68 +54,110 @@ export default function LudoBoard() {
   return (
     <div className="flex flex-col items-center gap-8">
         {/* Board Container - Fixed Aspect Ratio and explicit sizing */}
-        <div className="relative w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-slate-100 border-4 border-slate-800 shadow-2xl rounded-lg overflow-hidden grid grid-cols-[repeat(15,1fr)] grid-rows-[repeat(15,1fr)]">
+      <div className="relative w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-white border-2 border-slate-400 shadow-2xl overflow-hidden grid grid-cols-[repeat(15,1fr)] grid-rows-[repeat(15,1fr)]">
 
-          {/* Background Grid - Rendered explicitly for debug/structure */}
+        {/* Background Grid */}
           {Array.from({ length: 15 * 15 }).map((_, i) => {
             const x = i % 15;
             const y = Math.floor(i / 15);
-            // Check if this cell is part of the path
-            const isPath = MAIN_PATH_COORDS.some(c => c.x === x && c.y === y);
+
+            // Determine cell type
+            const isMainPath = MAIN_PATH_COORDS.some(c => c.x === x && c.y === y);
+
+            // Check Home Runs
+            const isRedHome = HOME_RUN_COORDS.red.some(c => c.x === x && c.y === y);
+            const isGreenHome = HOME_RUN_COORDS.green.some(c => c.x === x && c.y === y);
+            const isYellowHome = HOME_RUN_COORDS.yellow.some(c => c.x === x && c.y === y);
+            const isBlueHome = HOME_RUN_COORDS.blue.some(c => c.x === x && c.y === y);
+
+            // Safe Zones (Stars)
+            const isSafeZone = SAFE_ZONES.some(c => c.x === x && c.y === y);
+
+            // Start Positions (For Arrows)
+            const isBlueStart = x === 1 && y === 6;
+            const isYellowStart = x === 8 && y === 1;
+            const isGreenStart = x === 13 && y === 8;
+            const isRedStart = x === 6 && y === 13;
+
+            let bgClass = "bg-transparent";
+            let borderColor = "border-slate-800";
+
+            if (isRedHome) { bgClass = "bg-red-500"; borderColor = "border-red-600"; }
+            else if (isGreenHome) { bgClass = "bg-green-500"; borderColor = "border-green-600"; }
+            else if (isYellowHome) { bgClass = "bg-yellow-400"; borderColor = "border-yellow-500"; }
+            else if (isBlueHome) { bgClass = "bg-blue-500"; borderColor = "border-blue-600"; }
+            else if (isBlueStart) { bgClass = "bg-blue-500"; borderColor = "border-blue-600"; }
+            else if (isYellowStart) { bgClass = "bg-yellow-400"; borderColor = "border-yellow-500"; }
+            else if (isGreenStart) { bgClass = "bg-green-500"; borderColor = "border-green-600"; }
+            else if (isRedStart) { bgClass = "bg-red-500"; borderColor = "border-red-600"; }
+            else if (isMainPath) bgClass = "bg-white";
 
             return (
               <div
                 key={i}
                 className={cn(
-                  "border border-slate-200/50",
-                  isPath ? "bg-white" : "bg-transparent"
+                  "border-[0.5px] border-slate-800 flex items-center justify-center relative",
+                  bgClass
                 )}
-              />
+              >
+                {/* Visual Markers */}
+                {isSafeZone && !isBlueStart && !isYellowStart && !isGreenStart && !isRedStart && (
+                  <span className="text-slate-400 text-[10px] sm:text-lg">★</span>
+                )}
+                {/* Arrows for Starts */}
+                {isBlueStart && <span className="text-white text-lg font-bold">➜</span>}
+                {isYellowStart && <span className="text-white text-lg font-bold rotate-90">➜</span>}
+                {isGreenStart && <span className="text-white text-lg font-bold rotate-180">➜</span>}
+                {isRedStart && <span className="text-white text-lg font-bold -rotate-90">➜</span>}
+              </div>
             );
           })}
 
-          {/* Bases and Home Areas (Absolute positioned for now, or we can use grid-area if we wanted) */}
-          {/* We'll stick to absolute Overlays for the big blocks, z-index 0 */}
+        {/* Bases */}
           <div className="absolute inset-0 grid grid-cols-[repeat(15,1fr)] grid-rows-[repeat(15,1fr)] pointer-events-none z-0">
-            {/* Red Base (Top Left) */}
-            <div className="col-span-6 row-span-6 bg-red-100 border-r-2 border-b-2 border-slate-300 p-4">
-              <div className="w-full h-full bg-red-500 rounded-2xl flex items-center justify-center">
-                <span className="text-white font-bold opacity-50">RED</span>
-              </div>
+          {/* Blue Base (Top Left) */}
+          <div className="col-span-6 row-span-6 bg-blue-500 p-4 sm:p-6 border border-slate-800">
+            <div className="w-full h-full bg-white rounded-xl shadow-inner"></div>
+          </div>
+
+          {/* Yellow Base (Top Right) */}
+          <div className="col-start-10 col-span-6 row-span-6 bg-yellow-400 p-4 sm:p-6 border border-slate-800">
+            <div className="w-full h-full bg-white rounded-xl shadow-inner"></div>
             </div>
-            {/* Green Base (Top Right) */}
-            <div className="col-start-10 col-span-6 row-span-6 bg-green-100 border-l-2 border-b-2 border-slate-300 p-4">
-              <div className="w-full h-full bg-green-500 rounded-2xl flex items-center justify-center">
-                <span className="text-white font-bold opacity-50">GREEN</span>
-              </div>
-            </div>
-            {/* Blue Base (Bottom Right) */}
-            <div className="col-start-10 col-span-6 row-start-10 row-span-6 bg-blue-100 border-l-2 border-t-2 border-slate-300 p-4">
-              <div className="w-full h-full bg-blue-500 rounded-2xl flex items-center justify-center">
-                <span className="text-white font-bold opacity-50">BLUE</span>
-              </div>
-            </div>
-            {/* Yellow Base (Bottom Left) */}
-            <div className="col-span-6 row-start-10 row-span-6 bg-yellow-100 border-r-2 border-t-2 border-slate-300 p-4">
-              <div className="w-full h-full bg-yellow-500 rounded-2xl flex items-center justify-center">
-                <span className="text-white font-bold opacity-50">YELLOW</span>
-              </div>
+
+          {/* Green Base (Bottom Right) */}
+          <div className="col-start-10 col-span-6 row-start-10 row-span-6 bg-green-500 p-4 sm:p-6 border border-slate-800">
+            <div className="w-full h-full bg-white rounded-xl shadow-inner"></div>
+          </div>
+
+          {/* Red Base (Bottom Left) */}
+          <div className="col-span-6 row-start-10 row-span-6 bg-red-500 p-4 sm:p-6 border border-slate-800">
+            <div className="w-full h-full bg-white rounded-xl shadow-inner"></div>
             </div>
 
             {/* Center Home */}
-            <div className="col-start-7 col-span-3 row-start-7 row-span-3 bg-slate-800 flex items-center justify-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-red-500/20 via-yellow-500/20 to-blue-500/20"></div>
+          <div className="col-start-7 col-span-3 row-start-7 row-span-3 bg-white flex items-center justify-center relative overflow-hidden board-center border border-slate-800">
+            <div className="absolute inset-0 w-full h-full">
+              {/* Blue (Left) */}
+              <div className="absolute top-0 left-0 w-full h-full bg-blue-500" style={{ clipPath: 'polygon(0 0, 50% 50%, 0 100%)' }}></div>
+              {/* Yellow (Top) */}
+              <div className="absolute top-0 left-0 w-full h-full bg-yellow-400" style={{ clipPath: 'polygon(0 0, 100% 0, 50% 50%)' }}></div>
+              {/* Green (Right) */}
+              <div className="absolute top-0 left-0 w-full h-full bg-green-500" style={{ clipPath: 'polygon(100% 0, 100% 100%, 50% 50%)' }}></div>
+              {/* Red (Bottom) */}
+              <div className="absolute top-0 left-0 w-full h-full bg-red-500" style={{ clipPath: 'polygon(0 100%, 100% 100%, 50% 50%)' }}></div>
+            </div>
             </div>
           </div>
 
-          {/* Pieces */}
-          {/* Ensure z-index is higher than background */}
+        {/* Pieces */}
           <div className="absolute inset-0 grid grid-cols-[repeat(15,1fr)] grid-rows-[repeat(15,1fr)] pointer-events-none z-10 w-full h-full">
             {gameState.players.map((player, pIndex) => (
               player.pieces.map((piece, i) => {
                           const pIdx = parseInt(piece.id.split('-')[1]);
                           const coords = getPieceCoordinates(piece.color, piece.position, piece.state, pIdx);
 
+                // Improve clickability check
                           const isCurrentTurn = gameState.currentPlayerIndex === pIndex;
                           const isMovable = isCurrentTurn && gameState.diceValue !== null && canMovePiece(piece, gameState.diceValue);
 
@@ -164,11 +203,12 @@ export default function LudoBoard() {
             </Button>
           </div>
 
-          {gameState.waitingForMove && (
-            <div className="text-sm text-slate-500 animate-pulse">
-              Select a piece to move...
-            </div>
-          )}
+        <div className={cn(
+          "text-sm text-slate-500 animate-pulse transition-opacity duration-200 h-5", // Fixed height to prevent shift
+          gameState.waitingForMove ? "opacity-100" : "opacity-0"
+        )}>
+          Select a piece to move...
+        </div>
         </div>
       </div>
     );

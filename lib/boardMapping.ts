@@ -17,111 +17,79 @@ interface Coordinate {
 // (Note: Order matters for turn sequence) -> Red, Green, Yellow, Blue.
 
 // Let's define the path coordinates explicitly
+// Define the global path (52 steps)
+// Blue (TL) -> Yellow (TR) -> Green (BR) -> Red (BL)
+// Each quarter is 13 steps: 5 (Straight) + 5 (Straight) + 3 (Corner Turn)
 export const MAIN_PATH_COORDS: Coordinate[] = [
-    // Red Start (6, 1) going Right? 
-    // Wait, Red start is usually (6, 1).
-    { x: 1, y: 6 }, // 0: Red Start
-    { x: 2, y: 6 },
-    { x: 3, y: 6 },
-    { x: 4, y: 6 },
-    { x: 5, y: 6 }, // 4
-    // Turn Up
-    { x: 6, y: 5 }, // 5
-    { x: 6, y: 4 },
-    { x: 6, y: 3 },
-    { x: 6, y: 2 },
-    { x: 6, y: 1 },
-    { x: 6, y: 0 }, // 10
-    // Turn Right
-    { x: 7, y: 0 }, // 11
-    { x: 8, y: 0 }, // 12
-    // Turn Down
-    { x: 8, y: 1 }, // 13: Green Start?
-    { x: 8, y: 2 },
-    { x: 8, y: 3 },
-    { x: 8, y: 4 },
-    { x: 8, y: 5 },
-    { x: 8, y: 6 }, // 18
-    // Turn Right
-    { x: 9, y: 6 }, // 19
-    { x: 10, y: 6 },
-    { x: 11, y: 6 },
-    { x: 12, y: 6 },
-    { x: 13, y: 6 },
-    { x: 14, y: 6 }, // 24
-    // Turn Down
-    { x: 14, y: 7 }, // 25
-    { x: 14, y: 8 }, // 26: Yellow Start (if Yellow is BR but Start is usually Top of arm? No)
-    // Actually if Yellow is BR, start is (13, 8) going Left?
-    // Let's trace standard path:
-    // Red (6,1)-(6,5) -> (6,5)-(6,0) -> (7,0)-(8,0) -> ...
-    // ...
-    // Turn Left (from 14,8)
-    { x: 13, y: 8 }, // 27
-    { x: 12, y: 8 },
-    { x: 11, y: 8 },
-    { x: 10, y: 8 },
-    { x: 9, y: 8 }, // 31
-    // Turn Down
-    { x: 8, y: 9 }, // 32
-    { x: 8, y: 10 },
-    { x: 8, y: 11 },
-    { x: 8, y: 12 },
-    { x: 8, y: 13 },
-    { x: 8, y: 14 }, // 37
-    // Turn Left
-    { x: 7, y: 14 }, // 38
-    { x: 6, y: 14 }, // 39: Blue Start?
-    // Turn Up
-    { x: 6, y: 13 }, // 40
-    { x: 6, y: 12 },
-    { x: 6, y: 11 },
-    { x: 6, y: 10 },
-    { x: 6, y: 9 }, // 44
-    // Turn Left
-    { x: 5, y: 8 }, // 45
-    { x: 4, y: 8 },
-    { x: 3, y: 8 },
-    { x: 2, y: 8 },
-    { x: 1, y: 8 }, // 49
-    { x: 0, y: 8 }, // 50
-    // Turn Up to close loop
-    { x: 0, y: 7 }, // 51
+    // Q1: Blue Section
+    { x: 1, y: 6 }, { x: 2, y: 6 }, { x: 3, y: 6 }, { x: 4, y: 6 }, { x: 5, y: 6 }, // 5 Right
+    { x: 6, y: 5 }, { x: 6, y: 4 }, { x: 6, y: 3 }, { x: 6, y: 2 }, { x: 6, y: 1 }, // 5 Up
+    { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 }, // 3 Turn (Corner, Middle, Corner)
+
+    // Q2: Yellow Section
+    { x: 8, y: 1 }, { x: 8, y: 2 }, { x: 8, y: 3 }, { x: 8, y: 4 }, { x: 8, y: 5 }, // 5 Down
+    { x: 9, y: 6 }, { x: 10, y: 6 }, { x: 11, y: 6 }, { x: 12, y: 6 }, { x: 13, y: 6 }, // 5 Right
+    { x: 14, y: 6 }, { x: 14, y: 7 }, { x: 14, y: 8 }, // 3 Turn
+
+    // Q3: Green Section
+    { x: 13, y: 8 }, { x: 12, y: 8 }, { x: 11, y: 8 }, { x: 10, y: 8 }, { x: 9, y: 8 }, // 5 Left
+    { x: 8, y: 9 }, { x: 8, y: 10 }, { x: 8, y: 11 }, { x: 8, y: 12 }, { x: 8, y: 13 }, // 5 Down
+    { x: 8, y: 14 }, { x: 7, y: 14 }, { x: 6, y: 14 }, // 3 Turn
+
+    // Q4: Red Section
+    { x: 6, y: 13 }, { x: 6, y: 12 }, { x: 6, y: 11 }, { x: 6, y: 10 }, { x: 6, y: 9 }, // 5 Up
+    { x: 5, y: 8 }, { x: 4, y: 8 }, { x: 3, y: 8 }, { x: 2, y: 8 }, { x: 1, y: 8 }, // 5 Left
+    { x: 0, y: 8 }, { x: 0, y: 7 }, { x: 0, y: 6 } // 3 Turn
 ];
+
+// Directions based on new layout:
+// Blue (TL) -> Start (1,6) -> Right -> Top Wing
+// Yellow (TR) -> Start (8,1) -> Down -> Right Wing
+// Green (BR) -> Start (13,8) -> Left -> Bottom Wing
+// Red (BL) -> Start (6,13) -> Up -> Left Wing
 
 // Home Runs (6 squares ending in center)
 export const HOME_RUN_COORDS: Record<PlayerColor, Coordinate[]> = {
-    red: [
-        { x: 1, y: 7 }, { x: 2, y: 7 }, { x: 3, y: 7 }, { x: 4, y: 7 }, { x: 5, y: 7 }, { x: 6, y: 7 } // Center-ish
+    blue: [ // From Left
+        { x: 1, y: 7 }, { x: 2, y: 7 }, { x: 3, y: 7 }, { x: 4, y: 7 }, { x: 5, y: 7 }, { x: 6, y: 7 }
     ],
-    green: [
+    yellow: [ // From Top
         { x: 7, y: 1 }, { x: 7, y: 2 }, { x: 7, y: 3 }, { x: 7, y: 4 }, { x: 7, y: 5 }, { x: 7, y: 6 }
     ],
-    yellow: [ // If Yellow is BR
+    green: [ // From Right
         { x: 13, y: 7 }, { x: 12, y: 7 }, { x: 11, y: 7 }, { x: 10, y: 7 }, { x: 9, y: 7 }, { x: 8, y: 7 }
     ],
-    blue: [ // If Blue is BL
+    red: [ // From Bottom
         { x: 7, y: 13 }, { x: 7, y: 12 }, { x: 7, y: 11 }, { x: 7, y: 10 }, { x: 7, y: 9 }, { x: 7, y: 8 }
     ]
 };
 
 // Base positions (4 pieces per base)
-// Simplified: grid layouts within the base boxes
+// Blue: TL, Yellow: TR, Green: BR, Red: BL
 export const BASE_POSITIONS: Record<PlayerColor, Coordinate[]> = {
-    red: [{x: 1, y: 1}, {x: 4, y: 1}, {x: 1, y: 4}, {x: 4, y: 4}],
-    green: [{x: 10, y: 1}, {x: 13, y: 1}, {x: 10, y: 4}, {x: 13, y: 4}],
-    yellow: [{x: 13, y: 13}, {x: 10, y: 13}, {x: 13, y: 10}, {x: 10, y: 10}], // BR
-    blue: [{x: 1, y: 13}, {x: 4, y: 13}, {x: 1, y: 10}, {x: 4, y: 10 }] // BL
+    blue: [{ x: 1, y: 1 }, { x: 4, y: 1 }, { x: 1, y: 4 }, { x: 4, y: 4 }],   // TL
+    yellow: [{ x: 10, y: 1 }, { x: 13, y: 1 }, { x: 10, y: 4 }, { x: 13, y: 4 }], // TR
+    green: [{ x: 10, y: 10 }, { x: 13, y: 10 }, { x: 10, y: 13 }, { x: 13, y: 13 }], // BR (Note: x>=10, y>=10)
+    red: [{ x: 1, y: 10 }, { x: 4, y: 10 }, { x: 1, y: 13 }, { x: 4, y: 13 }]    // BL
 };
 
-// Update: Wait, main path yellow/blue indices might be swapped depending on layout.
-// In my MAIN_PATH_COORDS:
-// Index 13 is Green Start (Correct for TR)
-// Index 26 is Yellow Start? (At 14, 8) -> Checks out for TR -> BR
-// Index 39 is Blue Start? (At 6, 14) -> Checks out for BR -> BL
-// But BASE_POSITIONS:
-// Yellow is BR (13,13).
-// Blue is BL (1, 13).
+// Safe Zones (Stars)
+// Start positions imply safety + 1 star in each wing
+export const SAFE_ZONES: Coordinate[] = [
+    // Starts
+    { x: 1, y: 6 },  // Blue Start
+    { x: 8, y: 1 },  // Yellow Start
+    { x: 13, y: 8 }, // Green Start
+    { x: 6, y: 13 }, // Red Start
+    // Stars
+    { x: 8, y: 12 }, // Bottom Wing Star (Red's path, but near Green start?) NO.
+    // Standard: Star is 8 steps from start.
+    { x: 6, y: 2 },  // Top Wing Star (Yellow path, index 8)
+    { x: 12, y: 6 }, // Right Wing Star (Green path, index 21)
+    { x: 8, y: 12 }, // Bottom Wing Star (Red path, index 34)
+    { x: 2, y: 8 },  // Left Wing Star (Blue path, index 47)
+];
+
 
 export function getPieceCoordinates(color: PlayerColor, position: number, state: 'home' | 'active' | 'finished', pieceIndex: number): Coordinate {
     if (state === 'home') {
@@ -129,7 +97,8 @@ export function getPieceCoordinates(color: PlayerColor, position: number, state:
     }
     
     if (state === 'finished') {
-        // Center area
+        // Center area - slightly offset by color to show multiple finishers?
+        // Or just pile them in center
         return { x: 7, y: 7 }; 
     }
 

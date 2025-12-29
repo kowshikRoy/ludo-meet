@@ -29,16 +29,16 @@ export const HOME_STRETCH_LENGTH = 6;
 export const TOTAL_LENGTH = PATH_LENGTH + HOME_STRETCH_LENGTH;
 
 // Starting positions on the main path for each color (0-51)
-// Red starts at 0 (arbitrary choice, relative to board)
+// Blue starts at 0 (Left Wing)
 const START_POSITIONS: Record<PlayerColor, number> = {
-  red: 0,
-  green: 13,
-  yellow: 26,
-  blue: 39
+  blue: 0,
+  yellow: 13,
+  green: 26,
+  red: 39
 };
 
 export function createInitialState(): GameState {
-  const colors: PlayerColor[] = ['red', 'green', 'yellow', 'blue'];
+  const colors: PlayerColor[] = ['blue', 'yellow', 'green', 'red']; // Clockwise turn order
   return {
     players: colors.map(color => ({
       color,

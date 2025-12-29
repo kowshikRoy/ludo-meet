@@ -33,10 +33,10 @@ export default function LudoPiece({
         <motion.div
             layout
             className={cn(
-                "absolute rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.4)] z-10 cursor-pointer flex items-center justify-center border-2",
+                "relative rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.4)] z-10 cursor-pointer flex items-center justify-center border-2",
                 COLORS[color],
                 isClickable && "ring-4 ring-white/50 animate-pulseHover",
-                "w-[80%] h-[80%] m-[10%]"
+                "w-[80%] h-[80%] justify-self-center self-center"
             )}
             style={{
                 gridColumnStart: x + 1,

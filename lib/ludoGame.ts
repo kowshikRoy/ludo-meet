@@ -126,8 +126,9 @@ export function advancePieceByOne(gameState: GameState, pieceId: string): GameSt
       piece.position = (START_POSITIONS[piece.color as PlayerColor] + piece.distanceTraveled) % 52;
     } else {
 // In home stretch
-      // getPieceCoordinates expects position >= 51 to calculate homeIndex = position - 51
-      piece.position = piece.distanceTraveled;
+      // We map home stretch to positions 52+ to avoid conflict with Main Path index 51
+      // distanceTraveled 51 -> position 52 (Home Index 0)
+      piece.position = piece.distanceTraveled + 1;
 
       if (piece.distanceTraveled >= TOTAL_LENGTH - 1) { // 57
         // Reached end?
@@ -154,7 +155,9 @@ export function finalizeTurn(gameState: GameState, pieceId: string, diceValue: n
       newState.players.forEach((otherPlayer: Player) => {
         if (otherPlayer.color !== piece.color) {
           otherPlayer.pieces.forEach((otherPiece: Piece) => {
-            if (otherPiece.state === 'active' && otherPiece.position === landedPosition && otherPiece.distanceTraveled < 52) {
+            // Only capture pieces on the main path (distanceTraveled < 51)
+            // Pieces in home stretch (distanceTraveled >= 51) are safe and have distinct positions (>= 52)
+            if (otherPiece.state === 'active' && otherPiece.position === landedPosition && otherPiece.distanceTraveled < 51) {
               // Capture!
               otherPiece.state = 'home';
               otherPiece.position = -1;

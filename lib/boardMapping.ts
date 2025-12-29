@@ -103,12 +103,12 @@ export function getPieceCoordinates(color: PlayerColor, position: number, state:
     }
 
     // Active
-    if (position < 51) {
+    if (position < 52) {
         return MAIN_PATH_COORDS[position];
     }
     
     // Home stretch
-    const homeIndex = position - 51;
+    const homeIndex = position - 52;
     if (homeIndex >= 0 && homeIndex < 6) {
         return HOME_RUN_COORDS[color][homeIndex];
     }

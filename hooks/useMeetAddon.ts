@@ -4,6 +4,7 @@ import { meet } from '@googleworkspace/meet-addons/meet.addons';
 
 export function useMeetSidePanel() {
   const [client, setClient] = useState<any | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function init() {
@@ -13,8 +14,9 @@ export function useMeetSidePanel() {
         });
         const sidePanelClient = await session.createSidePanelClient();
         setClient(sidePanelClient);
-      } catch (error) {
-        console.error('Failed to initialize Meet Side Panel:', error);
+      } catch (err: any) {
+        console.error('Failed to initialize Meet Side Panel:', err);
+        setError(err.message || 'Unknown initialization error');
       }
     }
 
@@ -26,7 +28,7 @@ export function useMeetSidePanel() {
     // Alternatively, we could fail silently or set a mock client for dev
   }, []);
 
-  return client;
+  return { client, error };
 }
 
 export function useMeetMainStage() {

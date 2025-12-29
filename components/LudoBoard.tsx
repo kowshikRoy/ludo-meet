@@ -94,6 +94,16 @@ const Dice3D = ({ isRolling }: { isRolling: boolean }) => {
     />
   );
 
+  // Face helper
+  const Face = ({ transform, children }: { transform: string, children: React.ReactNode }) => (
+    <div
+      className="absolute inset-0 bg-white border-2 border-slate-300 backface-hidden rounded-xl"
+      style={{ transform }}
+    >
+      {children}
+    </div>
+  );
+
   return (
     <div className="relative" style={{ width: size, height: size, perspective: '300px' }}>
       <motion.div
@@ -117,49 +127,49 @@ const Dice3D = ({ isRolling }: { isRolling: boolean }) => {
       >
         {/* Faces - Using consistent layouts */}
         {/* Front (1) - Ace is larger */}
-        <div className="absolute inset-0 bg-white border-2 border-slate-300 backface-hidden" style={{ transform: `translateZ(${half}px)` }}>
+        <Face transform={`translateZ(${half}px)`}>
           <Dot top={50} left={50} size="w-6 h-6" />
-        </div>
+        </Face>
 
         {/* Back (6) */}
-        <div className="absolute inset-0 bg-white border-2 border-slate-300 backface-hidden" style={{ transform: `rotateY(180deg) translateZ(${half}px)` }}>
+        <Face transform={`rotateY(180deg) translateZ(${half}px)`}>
           <Dot top={20} left={25} />
           <Dot top={50} left={25} />
           <Dot top={80} left={25} />
           <Dot top={20} left={75} />
           <Dot top={50} left={75} />
           <Dot top={80} left={75} />
-        </div>
+        </Face>
 
         {/* Top (2) */}
-        <div className="absolute inset-0 bg-white border-2 border-slate-300 backface-hidden" style={{ transform: `rotateX(90deg) translateZ(${half}px)` }}>
+        <Face transform={`rotateX(90deg) translateZ(${half}px)`}>
           <Dot top={25} left={25} />
           <Dot top={75} left={75} />
-        </div>
+        </Face>
 
         {/* Bottom (5) */}
-        <div className="absolute inset-0 bg-white border-2 border-slate-300 backface-hidden" style={{ transform: `rotateX(-90deg) translateZ(${half}px)` }}>
+        <Face transform={`rotateX(-90deg) translateZ(${half}px)`}>
           <Dot top={25} left={25} />
           <Dot top={25} left={75} />
           <Dot top={75} left={25} />
           <Dot top={75} left={75} />
           <Dot top={50} left={50} />
-        </div>
+        </Face>
 
         {/* Right (3) */}
-        <div className="absolute inset-0 bg-white border-2 border-slate-300 backface-hidden" style={{ transform: `rotateY(90deg) translateZ(${half}px)` }}>
+        <Face transform={`rotateY(90deg) translateZ(${half}px)`}>
           <Dot top={20} left={20} />
           <Dot top={50} left={50} />
           <Dot top={80} left={80} />
-        </div>
+        </Face>
 
         {/* Left (4) */}
-        <div className="absolute inset-0 bg-white border-2 border-slate-300 backface-hidden" style={{ transform: `rotateY(-90deg) translateZ(${half}px)` }}>
+        <Face transform={`rotateY(-90deg) translateZ(${half}px)`}>
           <Dot top={25} left={25} />
           <Dot top={25} left={75} />
           <Dot top={75} left={25} />
           <Dot top={75} left={75} />
-        </div>
+        </Face>
       </motion.div>
     </div>
   );

@@ -4,13 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Piece, GameState, createInitialState, rollDice, movePiece, PlayerColor, canMovePiece } from '@/lib/ludoGame';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// Helper to map board coordinates
-// 15x15 grid
-// We need to map linear positions to x,y coords
-
-import { getPieceCoordinates } from '@/lib/boardMapping';
+import { getPieceCoordinates, MAIN_PATH_COORDS } from '@/lib/boardMapping';
 import LudoPiece from '@/components/LudoPiece';
+
+// Helper for highlighting safe zones or special cells if needed
+const SAFE_ZONES: { x: number, y: number }[] = [
+  { x: 6, y: 1 }, { x: 8, y: 13 }, { x: 1, y: 8 }, { x: 13, y: 6 }
+];
 
 export default function LudoBoard() {
   const [gameState, setGameState] = useState<GameState>(createInitialState());
@@ -56,63 +56,87 @@ export default function LudoBoard() {
 
   return (
     <div className="flex flex-col items-center gap-8">
-      <div className="relative w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-white border-4 border-slate-800 shadow-2xl rounded-lg overflow-hidden grid grid-cols-15 grid-rows-15">
-        {/* We'll implement a CSS Grid Board */}
-        {/* Board Background/Layout */}
-        <div className="absolute inset-0 grid grid-cols-15 grid-rows-15 pointer-events-none">
-          {/* Red Base (Top Left) */}
-          <div className="col-span-6 row-span-6 bg-red-100 border-r-2 border-b-2 border-slate-300 p-4">
-            <div className="w-full h-full bg-red-500 rounded-2xl flex items-center justify-center">
-              <span className="text-white font-bold opacity-50">RED</span>
-            </div>
-          </div>
-          {/* Green Base (Top Right) */}
-          <div className="col-start-10 col-span-6 row-span-6 bg-green-100 border-l-2 border-b-2 border-slate-300 p-4">
-            <div className="w-full h-full bg-green-500 rounded-2xl flex items-center justify-center">
-              <span className="text-white font-bold opacity-50">GREEN</span>
-            </div>
-          </div>
-          {/* Blue Base (Bottom Right) */}
-          <div className="col-start-10 col-span-6 row-start-10 row-span-6 bg-blue-100 border-l-2 border-t-2 border-slate-300 p-4">
-            <div className="w-full h-full bg-blue-500 rounded-2xl flex items-center justify-center">
-              <span className="text-white font-bold opacity-50">BLUE</span>
-            </div>
-          </div>
-          {/* Yellow Base (Bottom Left) */}
-          <div className="col-span-6 row-start-10 row-span-6 bg-yellow-100 border-r-2 border-t-2 border-slate-300 p-4">
-            <div className="w-full h-full bg-yellow-500 rounded-2xl flex items-center justify-center">
-              <span className="text-white font-bold opacity-50">YELLOW</span>
-            </div>
-          </div>
+        {/* Board Container - Fixed Aspect Ratio and explicit sizing */}
+        <div className="relative w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-slate-100 border-4 border-slate-800 shadow-2xl rounded-lg overflow-hidden grid grid-cols-[repeat(15,1fr)] grid-rows-[repeat(15,1fr)]">
 
-          {/* Center Home */}
-          <div className="col-start-7 col-span-3 row-start-7 row-span-3 bg-slate-800 flex items-center justify-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-red-500/20 via-yellow-500/20 to-blue-500/20"></div>
-          </div>
-        </div>
-
-        {/* Pieces */}
-        {gameState.players.map((player, pIndex) => (
-          player.pieces.map((piece, i) => {
-            // Parse piece index from id (e.g. "red-0")
-            const pIdx = parseInt(piece.id.split('-')[1]);
-            const coords = getPieceCoordinates(piece.color, piece.position, piece.state, pIdx);
-
-            const isCurrentTurn = gameState.currentPlayerIndex === pIndex;
-            const isMovable = isCurrentTurn && gameState.diceValue !== null && canMovePiece(piece, gameState.diceValue);
+          {/* Background Grid - Rendered explicitly for debug/structure */}
+          {Array.from({ length: 15 * 15 }).map((_, i) => {
+            const x = i % 15;
+            const y = Math.floor(i / 15);
+            // Check if this cell is part of the path
+            const isPath = MAIN_PATH_COORDS.some(c => c.x === x && c.y === y);
 
             return (
-              <LudoPiece
-                key={piece.id}
-                color={piece.color}
-                x={coords.x}
-                y={coords.y}
-                isClickable={isMovable}
-                onClick={() => handleDataPieceClick(piece)}
+              <div
+                key={i}
+                className={cn(
+                  "border border-slate-200/50",
+                  isPath ? "bg-white" : "bg-transparent"
+                )}
               />
             );
-          })
-        ))}
+          })}
+
+          {/* Bases and Home Areas (Absolute positioned for now, or we can use grid-area if we wanted) */}
+          {/* We'll stick to absolute Overlays for the big blocks, z-index 0 */}
+          <div className="absolute inset-0 grid grid-cols-[repeat(15,1fr)] grid-rows-[repeat(15,1fr)] pointer-events-none z-0">
+            {/* Red Base (Top Left) */}
+            <div className="col-span-6 row-span-6 bg-red-100 border-r-2 border-b-2 border-slate-300 p-4">
+              <div className="w-full h-full bg-red-500 rounded-2xl flex items-center justify-center">
+                <span className="text-white font-bold opacity-50">RED</span>
+              </div>
+            </div>
+            {/* Green Base (Top Right) */}
+            <div className="col-start-10 col-span-6 row-span-6 bg-green-100 border-l-2 border-b-2 border-slate-300 p-4">
+              <div className="w-full h-full bg-green-500 rounded-2xl flex items-center justify-center">
+                <span className="text-white font-bold opacity-50">GREEN</span>
+              </div>
+            </div>
+            {/* Blue Base (Bottom Right) */}
+            <div className="col-start-10 col-span-6 row-start-10 row-span-6 bg-blue-100 border-l-2 border-t-2 border-slate-300 p-4">
+              <div className="w-full h-full bg-blue-500 rounded-2xl flex items-center justify-center">
+                <span className="text-white font-bold opacity-50">BLUE</span>
+              </div>
+            </div>
+            {/* Yellow Base (Bottom Left) */}
+            <div className="col-span-6 row-start-10 row-span-6 bg-yellow-100 border-r-2 border-t-2 border-slate-300 p-4">
+              <div className="w-full h-full bg-yellow-500 rounded-2xl flex items-center justify-center">
+                <span className="text-white font-bold opacity-50">YELLOW</span>
+              </div>
+            </div>
+
+            {/* Center Home */}
+            <div className="col-start-7 col-span-3 row-start-7 row-span-3 bg-slate-800 flex items-center justify-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-500/20 via-yellow-500/20 to-blue-500/20"></div>
+            </div>
+          </div>
+
+          {/* Pieces */}
+          {/* Ensure z-index is higher than background */}
+          <div className="absolute inset-0 grid grid-cols-[repeat(15,1fr)] grid-rows-[repeat(15,1fr)] pointer-events-none z-10 w-full h-full">
+            {gameState.players.map((player, pIndex) => (
+              player.pieces.map((piece, i) => {
+                          const pIdx = parseInt(piece.id.split('-')[1]);
+                          const coords = getPieceCoordinates(piece.color, piece.position, piece.state, pIdx);
+
+                          const isCurrentTurn = gameState.currentPlayerIndex === pIndex;
+                          const isMovable = isCurrentTurn && gameState.diceValue !== null && canMovePiece(piece, gameState.diceValue);
+
+                          return (
+                               <div key={piece.id} className="contents pointer-events-auto">
+                                 <LudoPiece
+                                   color={piece.color}
+                                   x={coords.x}
+                                   y={coords.y}
+                                   isClickable={isMovable}
+                                   onClick={() => handleDataPieceClick(piece)}
+                                 />
+                               </div>
+                          );
+                        })
+                    ))}
+          </div>
+        </div>
 
         {/* Controls */}
         <div className="flex flex-col items-center gap-4">
@@ -146,10 +170,6 @@ export default function LudoBoard() {
             </div>
           )}
         </div>
-
-        {/* Debug State */}
-        {/* <pre className="text-xs bg-slate-100 p-2 rounded">{JSON.stringify(gameState.players, null, 2)}</pre> */}
       </div>
-    </div>
-  );
+    );
 }

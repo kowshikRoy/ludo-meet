@@ -146,6 +146,7 @@ export function finalizeTurn(gameState: GameState, pieceId: string, diceValue: n
   const piece = player.pieces.find((p: Piece) => p.id === pieceId);
 
   // Capture Logic
+  let captureOccurred = false;
   if (piece && piece.state === 'active' && piece.distanceTraveled < 51) {
     const landedPosition = piece.position;
     const isSafe = SAFE_INDICES.includes(landedPosition);
@@ -159,6 +160,7 @@ export function finalizeTurn(gameState: GameState, pieceId: string, diceValue: n
               otherPiece.state = 'home';
               otherPiece.position = -1;
               otherPiece.distanceTraveled = 0;
+              captureOccurred = true;
               // console.log(`Captured ${otherPiece.id} by ${piece.id}`);
             }
           });
@@ -168,7 +170,8 @@ export function finalizeTurn(gameState: GameState, pieceId: string, diceValue: n
   }
 
   // Turn switching
-  if (diceValue !== 6) {
+  // Extra turn if rolled 6 or captured a piece
+  if (diceValue !== 6 && !captureOccurred) {
     newState.currentPlayerIndex = (newState.currentPlayerIndex + 1) % 4;
   }
 
